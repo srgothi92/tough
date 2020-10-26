@@ -41,6 +41,10 @@ pub(crate) struct DownloadArgs {
 
     /// Output directory of targets
     outdir: PathBuf,
+
+    /// Allow repo download for expired metadata
+    #[structopt(long)]
+    allow_expired_repo: bool,
 }
 
 fn root_warning<P: AsRef<Path>>(path: P) {
@@ -96,7 +100,11 @@ impl DownloadArgs {
             limits: Limits {
                 ..tough::Limits::default()
             },
-            expiration_enforcement: ExpirationEnforcement::Safe,
+            expiration_enforcement: if self.allow_expired_repo {
+                ExpirationEnforcement::Unsafe
+            } else {
+                ExpirationEnforcement::Safe
+            },
         };
         if self.metadata_base_url.scheme() == "file" {
             let transport = FilesystemTransport;

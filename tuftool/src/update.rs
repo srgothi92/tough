@@ -90,6 +90,10 @@ pub(crate) struct UpdateArgs {
     /// Role of incoming metadata
     #[structopt(long = "role")]
     role: Option<String>,
+
+    /// Allow repo download for expired metadata
+    #[structopt(long)]
+    allow_expired_repo: bool,
 }
 
 impl UpdateArgs {
@@ -105,7 +109,11 @@ impl UpdateArgs {
             // a value so we use `metadata_base_url` as a placeholder
             targets_base_url: self.metadata_base_url.as_str(),
             limits: Limits::default(),
-            expiration_enforcement: ExpirationEnforcement::Safe,
+            expiration_enforcement: if self.allow_expired_repo {
+                ExpirationEnforcement::Unsafe
+            } else {
+                ExpirationEnforcement::Safe
+            },
         };
 
         // Load the `Repository` into the `RepositoryEditor`
